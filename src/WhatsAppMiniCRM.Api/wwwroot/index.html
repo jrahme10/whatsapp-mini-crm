@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WhatsApp Mini CRM</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">🟢 <strong>WhatsApp CRM</strong><small>Business Mini CRM</small></div>
+    <nav>
+      <a class="active">Dashboard</a><a>Conversations</a><a>Customers</a><a>Appointments</a><a>Tasks & Reminders</a><a>Quick Replies</a><a>Notes</a><a>Analytics</a><a>Settings</a>
+    </nav>
+  </aside>
+  <main>
+    <header><input placeholder="Search customers, chats, notes..."><strong>John's Barber Shop</strong></header>
+    <h1>Dashboard</h1>
+    <section class="stats">
+      <div><span>New Messages</span><b id="newMessages">—</b></div>
+      <div><span>Appointments Today</span><b id="appointmentsToday">—</b></div>
+      <div><span>Pending</span><b id="pendingConversations">—</b></div>
+      <div><span>Revenue This Month</span><b id="revenueThisMonth">—</b></div>
+    </section>
+    <section class="workspace">
+      <div class="panel list"><h3>Conversations</h3><div id="customers"></div></div>
+      <div class="panel chat">
+        <div class="chathead"><div><b>Sarah Khalil</b><small>+961 70 123 456</small></div></div>
+        <div class="messages">
+          <p class="in">Hi, I want to book an appointment for a haircut</p>
+          <p class="out">Hello Sarah! 👋 Sure, when would you like to come?</p>
+          <p class="in">Tomorrow around 5 PM if possible</p>
+          <p class="out">You are all set for tomorrow at 5:00 PM ✅</p>
+        </div>
+        <div class="composer"><input id="msg" placeholder="Type a message..."><button onclick="sendDemo()">Send</button></div>
+      </div>
+      <div class="panel info"><h3>Contact Info</h3><b>Sarah Khalil</b><p>Beirut, Lebanon</p><hr><h4>Notes</h4><p>Regular customer. Prefers layered haircut.</p><h4>Appointment</h4><div id="appointment">Loading...</div></div>
+    </section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
