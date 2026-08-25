@@ -1,48 +1,59 @@
-# WhatsApp Business Mini CRM — Database-Free MVP
+# WhatsApp Business Mini CRM — Presentable MVP
 
-A lightweight .NET 8 starter for a WhatsApp-first CRM aimed at barbers, salons, clinics, and small service businesses.
+A lightweight .NET 8 WhatsApp-first CRM demo for barbers, salons, clinics, and small service businesses.
 
-This version intentionally uses **no database**. Sample customers, conversations, dashboard KPIs, and appointments are stored in memory so you can run and customize the product immediately.
+This version intentionally uses **no database**. The backend exposes sample in-memory APIs, while the frontend includes a fully navigable interactive demo so the product flow can be validated before adding production persistence.
 
-## Included
-- Responsive CRM dashboard
-- Dashboard KPIs
-- Sample customers
-- In-memory conversations
-- In-memory appointments
-- Create appointment API
-- WhatsApp Cloud API send endpoint
-- WhatsApp webhook verification endpoint
+## Current demo
+- Responsive modern CRM dashboard
+- Dashboard KPIs and business overview
+- Interactive conversations inbox
+- Switch between customers and local demo chats
+- Send demo replies in the browser
+- Customer list with search and tag filtering
+- Add sample customers
+- Appointment list and status summary
+- Add sample appointments
+- Quick replies that can be loaded into the chat composer
+- Sample analytics
+- Business settings screen
+- Mobile responsive navigation
+- In-memory .NET APIs
+- WhatsApp Cloud API send endpoint and webhook verification endpoint
 - Swagger
 - No SQL Server / Entity Framework / database setup required
 
 ## Run locally
 1. Install the .NET 8 SDK.
-2. Open `src/WhatsAppMiniCRM.Api`.
-3. Run:
+2. Clone this repository.
+3. Open `src/WhatsAppMiniCRM.Api`.
+4. Run:
    ```bash
    dotnet restore
    dotnet run
    ```
-4. Open the URL printed by ASP.NET Core.
-5. Swagger is available at `/swagger`.
+5. Open the URL printed by ASP.NET Core in your browser.
+6. Swagger is available at `/swagger`.
 
-## Data behavior
-All demo data is created in `Data/InMemoryStore.cs` when the app starts. Changes made through the API live only in memory and reset when the application restarts.
+## Demo behavior
+The UI uses browser-side mock data so it remains useful even before the backend is connected to real WhatsApp traffic. Changes made in the demo reset when the page/application restarts.
+
+Backend sample data is stored in `Data/InMemoryStore.cs` and also resets when the application restarts.
 
 ## WhatsApp setup
-The UI works without WhatsApp credentials. To test the official WhatsApp Cloud API integration, set these values in `appsettings.json` or environment variables:
+The UI works without WhatsApp credentials. To test the official WhatsApp Cloud API integration, set these values outside source control or in local configuration:
 
 - `WhatsApp:PhoneNumberId`
 - `WhatsApp:AccessToken`
 - `WhatsApp:VerifyToken`
 
-A production deployment should store secrets outside source control.
-
-## Next steps
+## Production roadmap
 1. Parse inbound WhatsApp webhook messages.
-2. Add an in-memory message store and live conversation updates.
-3. Add appointment create/edit UI from a chat.
-4. Add quick replies and tags.
-5. Add authentication and multi-business support.
-6. Add persistence only when the product flow is validated.
+2. Persist customers, conversations, messages and appointments.
+3. Add SignalR live inbox updates.
+4. Connect appointment actions directly to conversations.
+5. Add authentication, roles and multi-business tenancy.
+6. Add Meta Embedded Signup for customer WhatsApp onboarding.
+7. Track billable WhatsApp template usage per business.
+8. Add subscription plans and billing.
+9. Deploy the API and web application with HTTPS.
