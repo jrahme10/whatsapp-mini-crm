@@ -1,43 +1,93 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WhatsApp Mini CRM</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WhatsApp Mini CRM</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="layout">
-  <aside>
-    <div class="brand">🟢 <strong>WhatsApp CRM</strong><small>Business Mini CRM</small></div>
-    <nav>
-      <a class="active">Dashboard</a><a>Conversations</a><a>Customers</a><a>Appointments</a><a>Tasks & Reminders</a><a>Quick Replies</a><a>Notes</a><a>Analytics</a><a>Settings</a>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="brand-mark">W</span><div><strong>WhatsApp CRM</strong><small>Business workspace</small></div></div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="dashboard">Dashboard</button>
+      <button class="nav-item" data-view="conversations">Conversations <span class="badge">3</span></button>
+      <button class="nav-item" data-view="customers">Customers</button>
+      <button class="nav-item" data-view="appointments">Appointments</button>
+      <button class="nav-item" data-view="quick-replies">Quick Replies</button>
+      <button class="nav-item" data-view="analytics">Analytics</button>
+      <button class="nav-item" data-view="settings">Settings</button>
     </nav>
+    <div class="sidebar-footer"><div class="avatar">JR</div><div><strong>John Rahme</strong><small>Administrator</small></div></div>
   </aside>
-  <main>
-    <header><input placeholder="Search customers, chats, notes..."><strong>John's Barber Shop</strong></header>
-    <h1>Dashboard</h1>
-    <section class="stats">
-      <div><span>New Messages</span><b id="newMessages">—</b></div>
-      <div><span>Appointments Today</span><b id="appointmentsToday">—</b></div>
-      <div><span>Pending</span><b id="pendingConversations">—</b></div>
-      <div><span>Revenue This Month</span><b id="revenueThisMonth">—</b></div>
-    </section>
-    <section class="workspace">
-      <div class="panel list"><h3>Conversations</h3><div id="customers"></div></div>
-      <div class="panel chat">
-        <div class="chathead"><div><b>Sarah Khalil</b><small>+961 70 123 456</small></div></div>
-        <div class="messages">
-          <p class="in">Hi, I want to book an appointment for a haircut</p>
-          <p class="out">Hello Sarah! 👋 Sure, when would you like to come?</p>
-          <p class="in">Tomorrow around 5 PM if possible</p>
-          <p class="out">You are all set for tomorrow at 5:00 PM ✅</p>
-        </div>
-        <div class="composer"><input id="msg" placeholder="Type a message..."><button onclick="sendDemo()">Send</button></div>
+
+  <main class="content">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+      <div class="search-wrap"><input id="globalSearch" placeholder="Search customers, chats, notes..."></div>
+      <div class="business-chip"><span class="status-dot"></span><div><strong>John's Barber Shop</strong><small>Demo workspace</small></div></div>
+    </header>
+
+    <section class="view active" id="dashboard">
+      <div class="page-head"><div><p class="eyebrow">Overview</p><h1>Good afternoon, John</h1><p class="subtitle">Here is what is happening with your business today.</p></div><button class="primary-btn" data-go="conversations">Open Inbox</button></div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>New Messages</span><strong>12</strong><small>+4 since yesterday</small></article>
+        <article class="stat-card"><span>Appointments Today</span><strong>8</strong><small>2 still pending</small></article>
+        <article class="stat-card"><span>New Customers</span><strong>5</strong><small>This week</small></article>
+        <article class="stat-card"><span>Revenue This Month</span><strong>$1,840</strong><small>+12.6% vs last month</small></article>
       </div>
-      <div class="panel info"><h3>Contact Info</h3><b>Sarah Khalil</b><p>Beirut, Lebanon</p><hr><h4>Notes</h4><p>Regular customer. Prefers layered haircut.</p><h4>Appointment</h4><div id="appointment">Loading...</div></div>
+      <div class="dashboard-grid">
+        <article class="card span-2"><div class="card-head"><div><h3>Recent conversations</h3><p>Latest customer messages</p></div><button class="text-btn" data-go="conversations">View all</button></div><div id="recentConversations"></div></article>
+        <article class="card"><div class="card-head"><div><h3>Today's appointments</h3><p>Upcoming schedule</p></div></div><div id="todayAppointments" class="stack"></div></article>
+        <article class="card"><div class="card-head"><div><h3>Follow-ups</h3><p>Customers needing attention</p></div></div><div class="follow-list"><div><span class="avatar sm">MK</span><div><strong>Maya Khoury</strong><small>Asked about pricing</small></div><span class="tag warning">Today</span></div><div><span class="avatar sm">RJ</span><div><strong>Rami Jaber</strong><small>Appointment not confirmed</small></div><span class="tag">1d</span></div></div></article>
+      </div>
+    </section>
+
+    <section class="view" id="conversations">
+      <div class="page-head"><div><p class="eyebrow">Inbox</p><h1>Conversations</h1><p class="subtitle">Manage customer chats in one place.</p></div><div class="filter-group"><button class="filter active">All</button><button class="filter">Unread</button></div></div>
+      <div class="inbox-layout">
+        <div class="conversation-list card"><div class="list-search"><input id="conversationSearch" placeholder="Search conversations..."></div><div id="conversationItems"></div></div>
+        <div class="chat-panel card">
+          <div class="chat-header" id="chatHeader"></div>
+          <div class="messages" id="messages"></div>
+          <form class="composer" id="replyForm"><input id="replyInput" placeholder="Type a reply..." autocomplete="off"><button class="primary-btn" type="submit">Send</button></form>
+        </div>
+        <div class="contact-panel card" id="contactPanel"></div>
+      </div>
+    </section>
+
+    <section class="view" id="customers">
+      <div class="page-head"><div><p class="eyebrow">CRM</p><h1>Customers</h1><p class="subtitle">Customer profiles, tags and recent activity.</p></div><button class="primary-btn" id="addCustomerBtn">+ Add Customer</button></div>
+      <div class="card table-card"><div class="table-toolbar"><input id="customerSearch" placeholder="Search customers..."><select id="customerTagFilter"><option value="">All tags</option><option>VIP</option><option>Regular</option><option>New Lead</option></select></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Tag</th><th>Last contact</th><th>Visits</th></tr></thead><tbody id="customerTable"></tbody></table></div></div>
+    </section>
+
+    <section class="view" id="appointments">
+      <div class="page-head"><div><p class="eyebrow">Schedule</p><h1>Appointments</h1><p class="subtitle">Manage today's bookings and upcoming visits.</p></div><button class="primary-btn" id="addAppointmentBtn">+ New Appointment</button></div>
+      <div class="appointment-summary"><article class="mini-card"><span>Today</span><strong id="apptTodayCount">0</strong></article><article class="mini-card"><span>Confirmed</span><strong id="apptConfirmedCount">0</strong></article><article class="mini-card"><span>Pending</span><strong id="apptPendingCount">0</strong></article></div>
+      <div class="card"><div id="appointmentList" class="appointment-list"></div></div>
+    </section>
+
+    <section class="view" id="quick-replies">
+      <div class="page-head"><div><p class="eyebrow">Productivity</p><h1>Quick Replies</h1><p class="subtitle">Reusable responses for common customer questions.</p></div><button class="primary-btn" id="addQuickReplyBtn">+ Add Reply</button></div>
+      <div id="quickRepliesGrid" class="quick-grid"></div>
+    </section>
+
+    <section class="view" id="analytics">
+      <div class="page-head"><div><p class="eyebrow">Insights</p><h1>Analytics</h1><p class="subtitle">A simple sample of business performance.</p></div></div>
+      <div class="stats-grid"><article class="stat-card"><span>Response Rate</span><strong>96%</strong><small>Last 30 days</small></article><article class="stat-card"><span>Avg. Reply Time</span><strong>4m</strong><small>During business hours</small></article><article class="stat-card"><span>Bookings</span><strong>118</strong><small>This month</small></article><article class="stat-card"><span>Repeat Customers</span><strong>71%</strong><small>Last 90 days</small></article></div>
+      <div class="card analytics-card"><h3>Messages this week</h3><div class="bars" id="bars"></div></div>
+    </section>
+
+    <section class="view" id="settings">
+      <div class="page-head"><div><p class="eyebrow">Workspace</p><h1>Settings</h1><p class="subtitle">Demo configuration for the business account.</p></div></div>
+      <div class="settings-grid"><div class="card"><h3>Business profile</h3><label>Business name<input value="John's Barber Shop"></label><label>Phone<input value="+961 70 555 111"></label><label>Location<input value="Beirut, Lebanon"></label><button class="primary-btn" id="saveSettingsBtn">Save Changes</button></div><div class="card"><h3>WhatsApp connection</h3><div class="connection-box"><span class="status-dot"></span><div><strong>Demo mode</strong><p>Real WhatsApp credentials are not connected yet.</p></div></div><button class="secondary-btn" disabled title="Available after Meta Cloud API setup">Connect WhatsApp</button></div></div>
     </section>
   </main>
 </div>
+
+<div class="modal" id="modal" aria-hidden="true"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">New item</h3><button id="closeModalBtn" aria-label="Close">×</button></div><form id="modalForm"><div id="modalFields"></div><div class="modal-actions"><button type="button" class="secondary-btn" id="cancelModalBtn">Cancel</button><button type="submit" class="primary-btn">Save</button></div></form></div></div>
+<div class="toast" id="toast"></div>
 <script src="app.js"></script>
 </body>
 </html>
