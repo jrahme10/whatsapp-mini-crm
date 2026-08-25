@@ -1,17 +1,57 @@
-async function loadDashboard(){
-  try{
-    const d=await fetch('/api/dashboard').then(r=>r.json());
-    newMessages.textContent=d.newMessages; appointmentsToday.textContent=d.appointmentsToday; pendingConversations.textContent=d.pendingConversations; revenueThisMonth.textContent='$'+Number(d.revenueThisMonth).toFixed(0);
-  }catch{ newMessages.textContent='12'; appointmentsToday.textContent='8'; pendingConversations.textContent='15'; revenueThisMonth.textContent='$2,450'; }
-}
-async function loadCustomers(){
-  try{
-    const rows=await fetch('/api/customers').then(r=>r.json());
-    customers.innerHTML=rows.map(x=>`<div class="customer"><b>${x.displayName||x.phoneNumber}</b><small>${x.phoneNumber}</small></div>`).join('');
-  }catch{ customers.innerHTML='<div class="customer"><b>Sarah Khalil</b><small>Hi, I want to book an appointment...</small></div><div class="customer"><b>Charbel M.</b><small>How much for beard + haircut?</small></div>'; }
-}
-async function loadAppointment(){
-  try{ const a=await fetch('/api/appointments').then(r=>r.json()); appointment.innerHTML=a.length?`<b>${new Date(a[0].startsAt).toLocaleString()}</b><p>${a[0].serviceName} · $${a[0].price??'-'} · ${a[0].status}</p>`:'No upcoming appointment'; }catch{ appointment.innerHTML='<b>Tomorrow, 5:00 PM</b><p>Haircut · $15 · Confirmed</p>'; }
-}
-function sendDemo(){ const t=msg.value.trim(); if(!t)return; const p=document.createElement('p');p.className='out';p.textContent=t;document.querySelector('.messages').appendChild(p);msg.value=''; }
-loadDashboard();loadCustomers();loadAppointment();
+const state={
+  activeConversation:1,
+  customers:[
+    {id:1,name:'Sarah Khalil',phone:'+961 70 123 456',tag:'VIP',last:'Today, 4:42 PM',visits:14,location:'Beirut, Lebanon',notes:'Regular customer. Prefers layered haircut.',initials:'SK'},
+    {id:2,name:'Rami Jaber',phone:'+961 71 222 410',tag:'Regular',last:'Today, 3:18 PM',visits:8,location:'Jal El Dib, Lebanon',notes:'Usually books haircut + beard.',initials:'RJ'},
+    {id:3,name:'Maya Khoury',phone:'+961 76 908 332',tag:'New Lead',last:'Today, 2:55 PM',visits:1,location:'Dbayeh, Lebanon',notes:'Asked about pricing and availability.',initials:'MK'},
+    {id:4,name:'Nadim Saab',phone:'+961 70 441 889',tag:'Regular',last:'Yesterday',visits:6,location:'Antelias, Lebanon',notes:'Prefers evening appointments.',initials:'NS'},
+    {id:5,name:'Lara Nassar',phone:'+961 81 700 105',tag:'VIP',last:'Monday',visits:19,location:'Beirut, Lebanon',notes:'Long-time customer.',initials:'LN'}
+  ],
+  conversations:[
+    {id:1,customerId:1,time:'4:42 PM',unread:true,preview:'Tomorrow around 5 PM if possible',messages:[{me:false,text:'Hi, I want to book an appointment for a haircut',time:'4:37 PM'},{me:true,text:'Hello Sarah! Sure, when would you like to come?',time:'4:38 PM'},{me:false,text:'Tomorrow around 5 PM if possible',time:'4:42 PM'}]},
+    {id:2,customerId:2,time:'3:18 PM',unread:false,preview:'Thanks, see you then!',messages:[{me:false,text:'Can I come today for hair and beard?',time:'3:12 PM'},{me:true,text:'Yes, I can book you at 6:30 PM.',time:'3:15 PM'},{me:false,text:'Thanks, see you then!',time:'3:18 PM'}]},
+    {id:3,customerId:3,time:'2:55 PM',unread:true,preview:'How much is a blow dry?',messages:[{me:false,text:'Hi! How much is a blow dry?',time:'2:55 PM'}]},
+    {id:4,customerId:4,time:'Yesterday',unread:false,preview:'Perfect, thank you.',messages:[{me:false,text:'Can we move Friday to 7?',time:'Yesterday'},{me:true,text:'Done, Friday at 7 PM.',time:'Yesterday'},{me:false,text:'Perfect, thank you.',time:'Yesterday'}]}
+  ],
+  appointments:[
+    {id:1,time:'10:00 AM',customer:'Rami Jaber',service:'Haircut + Beard',staff:'John',status:'Confirmed',day:'Today'},
+    {id:2,time:'1:30 PM',customer:'Maya Khoury',service:'Consultation',staff:'John',status:'Pending',day:'Today'},
+    {id:3,time:'5:00 PM',customer:'Sarah Khalil',service:'Haircut',staff:'John',status:'Confirmed',day:'Today'},
+    {id:4,time:'7:00 PM',customer:'Nadim Saab',service:'Haircut + Beard',staff:'John',status:'Confirmed',day:'Friday'}
+  ],
+  quickReplies:[
+    {title:'Appointment confirmed',text:'Your appointment is confirmed. See you soon!'},
+    {title:'Running late',text:'We are running about 10 minutes late. Thank you for your patience.'},
+    {title:'Price list',text:'Haircut is $10, beard is $5, and haircut + beard is $13.'}
+  ]
+};
+
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+const getCustomer=id=>state.customers.find(c=>c.id===id);
+
+function navigate(view){$$('.view').forEach(v=>v.classList.toggle('active',v.id===view));$$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));$('#sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});}
+
+function renderRecent(){const root=$('#recentConversations');root.innerHTML='';state.conversations.slice(0,4).forEach(c=>{const u=getCustomer(c.customerId);const row=document.createElement('div');row.className='conversation-row';row.innerHTML=`<span class="avatar sm">${u.initials}</span><div><strong>${u.name}</strong><p>${c.preview}</p></div><time>${c.time}</time>`;row.addEventListener('click',()=>{state.activeConversation=c.id;renderInbox();navigate('conversations')});root.appendChild(row)});}
+
+function renderToday(){const root=$('#todayAppointments');root.innerHTML='';state.appointments.filter(a=>a.day==='Today').slice(0,4).forEach(a=>{root.insertAdjacentHTML('beforeend',`<div class="appointment-item"><span class="appointment-time">${a.time}</span><div><strong>${a.customer}</strong><small>${a.service}</small></div><span class="tag ${a.status==='Pending'?'warning':''}">${a.status}</span></div>`)});}
+
+function renderInbox(filter=''){const list=$('#conversationItems');list.innerHTML='';state.conversations.filter(c=>{const u=getCustomer(c.customerId);return (u.name+' '+c.preview).toLowerCase().includes(filter.toLowerCase())}).forEach(c=>{const u=getCustomer(c.customerId);const el=document.createElement('div');el.className='conversation-item'+(c.id===state.activeConversation?' active':'');el.innerHTML=`<span class="avatar sm">${u.initials}</span><div><strong>${u.name}</strong><p>${c.preview}</p></div><div><time>${c.time}</time>${c.unread?'<span class="unread-dot"></span>':''}</div>`;el.addEventListener('click',()=>{state.activeConversation=c.id;c.unread=false;renderInbox($('#conversationSearch').value)});list.appendChild(el)});
+  const convo=state.conversations.find(c=>c.id===state.activeConversation)||state.conversations[0];if(!convo)return;const u=getCustomer(convo.customerId);$('#chatHeader').innerHTML=`<span class="avatar sm">${u.initials}</span><div><strong>${u.name}</strong><small>${u.phone} · WhatsApp</small></div>`;const messages=$('#messages');messages.innerHTML='';convo.messages.forEach(m=>messages.insertAdjacentHTML('beforeend',`<div class="bubble ${m.me?'me':''}">${escapeHtml(m.text)}<time>${m.time}</time></div>`));messages.scrollTop=messages.scrollHeight;$('#contactPanel').innerHTML=`<div class="profile"><div class="avatar">${u.initials}</div><strong>${u.name}</strong><p>${u.phone}<br>${u.location}</p></div><hr><h4>Customer details</h4><p><strong>Tag:</strong> ${u.tag}<br><strong>Visits:</strong> ${u.visits}<br><strong>Last contact:</strong> ${u.last}</p><hr><h4>Notes</h4><p>${u.notes}</p>`;}
+
+function renderCustomers(){const q=$('#customerSearch').value.toLowerCase();const tag=$('#customerTagFilter').value;const body=$('#customerTable');body.innerHTML='';state.customers.filter(c=>(!tag||c.tag===tag)&&(c.name+' '+c.phone).toLowerCase().includes(q)).forEach(c=>body.insertAdjacentHTML('beforeend',`<tr><td><div class="customer-cell"><span class="avatar sm">${c.initials}</span><strong>${c.name}</strong></div></td><td>${c.phone}</td><td><span class="tag">${c.tag}</span></td><td>${c.last}</td><td>${c.visits}</td></tr>`));}
+
+function renderAppointments(){const root=$('#appointmentList');root.innerHTML='';state.appointments.forEach(a=>root.insertAdjacentHTML('beforeend',`<div class="appointment-row"><div><strong>${a.day}</strong><small>${a.time}</small></div><div><strong>${a.customer}</strong><small>${a.service} · ${a.staff}</small></div><div class="status-cell"><span class="tag ${a.status==='Pending'?'warning':''}">${a.status}</span></div><button class="secondary-btn" type="button">Details</button></div>`));const today=state.appointments.filter(a=>a.day==='Today');$('#apptTodayCount').textContent=today.length;$('#apptConfirmedCount').textContent=today.filter(a=>a.status==='Confirmed').length;$('#apptPendingCount').textContent=today.filter(a=>a.status==='Pending').length;renderToday();}
+
+function renderQuickReplies(){const root=$('#quickRepliesGrid');root.innerHTML='';state.quickReplies.forEach(r=>{const el=document.createElement('article');el.className='quick-card';el.innerHTML=`<h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.text)}</p><button class="text-btn" type="button">Copy to chat</button>`;el.querySelector('button').addEventListener('click',()=>{$('#replyInput').value=r.text;navigate('conversations');$('#replyInput').focus()});root.appendChild(el)});}
+
+function renderBars(){const vals=[52,78,63,91,74,88,66],days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];$('#bars').innerHTML=vals.map((v,i)=>`<div class="bar-wrap"><div class="bar" style="height:${v*2}px" title="${v} messages"></div><span>${days[i]}</span></div>`).join('');}
+
+function openModal(type){const fields=$('#modalFields');$('#modalForm').dataset.type=type;if(type==='customer'){ $('#modalTitle').textContent='Add customer';fields.innerHTML='<label>Name<input name="name" required></label><label>Phone<input name="phone" required></label><label>Tag<select name="tag"><option>New Lead</option><option>Regular</option><option>VIP</option></select></label>';}else if(type==='appointment'){ $('#modalTitle').textContent='New appointment';fields.innerHTML='<label>Customer<input name="customer" required></label><label>Time<input name="time" placeholder="5:00 PM" required></label><label>Service<input name="service" placeholder="Haircut" required></label>';}else{ $('#modalTitle').textContent='Add quick reply';fields.innerHTML='<label>Title<input name="title" required></label><label>Message<input name="text" required></label>';}$('#modal').classList.add('open');$('#modal').setAttribute('aria-hidden','false');}
+function closeModal(){$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true');$('#modalForm').reset();}
+function submitModal(e){e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));const type=e.currentTarget.dataset.type;if(type==='customer'){const initials=data.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();state.customers.push({id:Date.now(),name:data.name,phone:data.phone,tag:data.tag,last:'Just now',visits:0,location:'Lebanon',notes:'New customer.',initials});renderCustomers();toast('Customer added');}else if(type==='appointment'){state.appointments.push({id:Date.now(),time:data.time,customer:data.customer,service:data.service,staff:'John',status:'Pending',day:'Today'});renderAppointments();toast('Appointment added');}else{state.quickReplies.push({title:data.title,text:data.text});renderQuickReplies();toast('Quick reply added');}closeModal();}
+function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+
+$('#nav').addEventListener('click',e=>{const btn=e.target.closest('[data-view]');if(btn)navigate(btn.dataset.view)});$$('[data-go]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.go)));$('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));$('#conversationSearch').addEventListener('input',e=>renderInbox(e.target.value));$('#customerSearch').addEventListener('input',renderCustomers);$('#customerTagFilter').addEventListener('change',renderCustomers);$('#replyForm').addEventListener('submit',e=>{e.preventDefault();const input=$('#replyInput');const text=input.value.trim();if(!text)return;const c=state.conversations.find(x=>x.id===state.activeConversation);c.messages.push({me:true,text,time:'Now'});c.preview=text;c.time='Now';input.value='';renderInbox($('#conversationSearch').value);renderRecent();toast('Reply added to demo chat')});$('#addCustomerBtn').addEventListener('click',()=>openModal('customer'));$('#addAppointmentBtn').addEventListener('click',()=>openModal('appointment'));$('#addQuickReplyBtn').addEventListener('click',()=>openModal('quick'));$('#closeModalBtn').addEventListener('click',closeModal);$('#cancelModalBtn').addEventListener('click',closeModal);$('#modalForm').addEventListener('submit',submitModal);$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});$('#saveSettingsBtn').addEventListener('click',()=>toast('Settings saved for this demo'));$('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.trim();if(q){navigate('customers');$('#customerSearch').value=q;renderCustomers();}}});
+
+renderRecent();renderToday();renderInbox();renderCustomers();renderAppointments();renderQuickReplies();renderBars();
